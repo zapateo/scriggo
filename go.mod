@@ -1,4 +1,4 @@
-module github.com/open2b/scriggo
+module github.com/zapateo/scriggo
 
 go 1.16
 

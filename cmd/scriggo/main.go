@@ -249,11 +249,25 @@ var commands = map[string]func(){
 	},
 }
 
+// Version holds the version of Scriggo.
+// It is set at compile time by passing the 'ldflags' to 'go build'.
+var Version string
+
 // version returns the scriggo command version.
 func version() string {
+	// First: read the version from 'runtime/debug', that is set if Scriggo is
+	// installed through 'go install'.
 	if info, ok := debug.ReadBuildInfo(); ok {
-		return info.Main.Version
+		if v := info.Main.Version; v != "(devel)" {
+			return v
+		}
 	}
+	// Second: read the version from the package-level variable Version, that
+	// is set passing the ldflags to 'go build'.
+	if Version != "" {
+		return Version
+	}
+	// None of the versions above has been set.
 	return "unknown"
 }
 

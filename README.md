@@ -7,7 +7,7 @@ The world’s most powerful template engine and [Go](https://go.dev/) embeddable
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/open2b/scriggo/.svg)](https://pkg.go.dev/github.com/open2b/scriggo/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/open2b/scriggo)](https://goreportcard.com/report/github.com/open2b/scriggo)
-![Coverage](https://img.shields.io/badge/Coverage-52.3%25-yellow)
+![Coverage](https://img.shields.io/badge/Coverage-63.6%25-yellow)
 
 [Website](https://scriggo.com/) | [Get Started](https://scriggo.com/get-started) | [Documentation](https://scriggo.com/what-is-scriggo) | [Community](https://github.com/open2b/scriggo/discussions) | [Contributing](https://github.com/open2b/scriggo/blob/main/CONTRIBUTING.md)
 

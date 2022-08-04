@@ -343,7 +343,7 @@ func filePaths(pattern string) ([]string, error) {
 			return nil
 		}
 		switch filepath.Ext(path) {
-		case ".go", ".script", ".html", ".css", ".js", ".json", ".md":
+		case ".go", ".html", ".css", ".js", ".json", ".md":
 		default:
 			return nil
 		}
@@ -415,7 +415,7 @@ func goldenCompare(testPath string, got []byte) error {
 }
 
 // isBuildConstraints reports whether line is a build contrain, as specified at
-// https://golang.org/pkg/go/build/#hdr-Build_Constraints.
+// https://pkg.go.dev/go/build#hdr-Build_Constraints.
 func isBuildConstraints(line string) bool {
 	line = strings.TrimSpace(line)
 	if !strings.HasPrefix(line, "//") {
@@ -428,34 +428,32 @@ func isBuildConstraints(line string) bool {
 
 // readMode reports the mode (and any options) associated to src.
 //
-// Mode is specified in programs and scripts using a comment line (starting with
-// "//"):
+// Mode is specified in programs using a comment line (starting with "//"):
 //
-//  // mode
+//	// mode
 //
 // templates must encapsulate mode in a line containing just a comment:
 //
-//  {# readMode #}
+//	{# readMode #}
 //
 // After the mode keyword, some arguments may be provided using the syntax
 // accepted by function flag.Parse.
 //
-// 	// run -time 10s
+//	// run -time 10s
 //
 // As a special case, the 'skip' comment can be followed by any sequence of
 // characters (after a whitespace character) that will be ignored. This is
 // useful to put an inline comment to the "skip" comment, explaining the reason
 // why a given test cannot be run. For example:
 //
-//  // skip because feature X is not supported
-//  // skip : enable when bug Y will be fixed
-//
+//	// skip because feature X is not supported
+//	// skip : enable when bug Y will be fixed
 func readMode(src []byte, ext string) (string, []string, error) {
 	if bytes.HasPrefix(src, BOM) {
 		src = src[len(BOM):]
 	}
 	switch ext {
-	case ".go", ".script":
+	case ".go":
 		for _, l := range strings.Split(string(src), "\n") {
 			l = strings.TrimSpace(l)
 			if l == "" {
@@ -616,8 +614,7 @@ func runGc(path string) (int, []byte, []byte, error) {
 
 // goBaseVersion returns the go base version for v.
 //
-//		1.15.5 -> 1.15
-//
+//	1.15.5 -> 1.15
 func goBaseVersion(v string) string {
 	// Taken from cmd/scriggo/util.go.
 	if strings.HasPrefix(v, "devel ") {
@@ -668,8 +665,6 @@ func test(src []byte, mode, filePath string, opts []string, keepTestingOnFail bo
 	case "paniccheck":
 		switch ext {
 		case ".go":
-		case ".script":
-			return fmt.Errorf("unsupported mode 'paniccheck' for scripts")
 		default:
 			return fmt.Errorf("unsupported mode 'paniccheck' for templates")
 		}
@@ -714,12 +709,6 @@ func test(src []byte, mode, filePath string, opts []string, keepTestingOnFail bo
 				return formatError("Scriggo and gc returned two different stdout/stderr")
 			}
 			return nil
-		case ".script":
-			out, err := unwrapStdout(cmd(src, opts, "run", ".script"))
-			if err != nil {
-				return err
-			}
-			return goldenCompare(filePath, out)
 		}
 	case "render":
 		out, err := unwrapStdout(cmd(src, opts, "run", ext))

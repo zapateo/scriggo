@@ -1,5 +1,3 @@
-// skip : non-name on left side error not reported
-
 // errorcheck
 
 // Copyright 2011 The Go Authors. All rights reserved.

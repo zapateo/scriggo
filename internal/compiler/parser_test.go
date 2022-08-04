@@ -57,7 +57,7 @@ var goContextTreeTests = []struct {
 		ast.NewForRange(p(1, 1, 0, 25), ast.NewAssignment(p(1, 5, 4, 18), []ast.Expression{
 			ast.NewIdentifier(p(1, 5, 4, 4), "_"), ast.NewIdentifier(p(1, 8, 7, 7), "v")},
 			ast.AssignmentDeclaration, []ast.Expression{ast.NewIdentifier(p(1, 19, 18, 18), "e")}),
-			[]ast.Node{ast.NewIdentifier(p(2, 2, 23, 23), "b")})}, ast.FormatText)},
+			[]ast.Node{ast.NewIdentifier(p(2, 2, 23, 23), "b")}, nil)}, ast.FormatText)},
 	{"for _ = range []int(nil) { }", ast.NewTree("", []ast.Node{
 		ast.NewForRange(p(1, 1, 0, 27),
 			ast.NewAssignment(p(1, 5, 4, 23),
@@ -67,7 +67,7 @@ var goContextTreeTests = []struct {
 					ast.NewCall(p(1, 20, 14, 23),
 						ast.NewSliceType(p(1, 15, 14, 18), ast.NewIdentifier(p(1, 17, 16, 18), "int")),
 						[]ast.Expression{ast.NewIdentifier(p(1, 21, 20, 22), "nil")},
-						false)}), nil)}, ast.FormatText)},
+						false)}), nil, nil)}, ast.FormatText)},
 	{"switch {\n\tdefault:\n}\n", ast.NewTree("", []ast.Node{
 		ast.NewSwitch(p(1, 1, 0, 19), nil, nil, nil, []*ast.Case{
 			ast.NewCase(p(2, 2, 10, 16), nil, nil)})}, ast.FormatText)},
@@ -101,7 +101,7 @@ var goContextTreeTests = []struct {
 								{nil, ast.NewBasicLiteral(p(1, 25, 24, 24), ast.IntLiteral, "1")},
 								{nil, ast.NewBasicLiteral(p(1, 27, 26, 26), ast.IntLiteral, "2")},
 								{nil, ast.NewBasicLiteral(p(1, 29, 28, 28), ast.IntLiteral, "3")},
-							})}), nil)},
+							})}), nil, nil)},
 			ast.FormatText)},
 	{"var a int",
 		ast.NewTree("", []ast.Node{
@@ -743,13 +743,6 @@ var treeTests = []struct {
 					ast.NewBasicLiteral(p(1, 12, 11, 11), ast.IntLiteral, "5"),
 				), nil, nil),
 		}, ast.FormatHTML)},
-	{"{% if $x %}{% end %}",
-		ast.NewTree("", []ast.Node{
-			ast.NewIf(p(1, 4, 3, 16), nil,
-				ast.NewDollarIdentifier(p(1, 7, 6, 7),
-					ast.NewIdentifier(p(1, 8, 7, 7), "x"),
-				), nil, nil),
-		}, ast.FormatHTML)},
 	{"{% for %}{% end %}",
 		ast.NewTree("", []ast.Node{
 			ast.NewFor(p(1, 4, 3, 14), nil, nil, nil, nil),
@@ -805,7 +798,7 @@ var treeTests = []struct {
 				p(1, 4, 3, 34),
 				ast.NewIdentifier(p(1, 8, 7, 13), "article"),
 				ast.NewIdentifier(p(1, 19, 18, 25), "articles"),
-				nil),
+				nil, nil),
 		}, ast.FormatHTML)},
 	{"{% for range articles %}{% end %}",
 		ast.NewTree("", []ast.Node{
@@ -813,7 +806,7 @@ var treeTests = []struct {
 				p(1, 4, 3, 29),
 				ast.NewAssignment(p(1, 8, 7, 20), nil,
 					ast.AssignmentSimple, []ast.Expression{ast.NewIdentifier(p(1, 14, 13, 20), "articles")}),
-				nil),
+				nil, nil),
 		}, ast.FormatHTML)},
 	{"{% for i := range articles %}{% end %}",
 		ast.NewTree("", []ast.Node{
@@ -822,7 +815,7 @@ var treeTests = []struct {
 				ast.NewAssignment(p(1, 8, 7, 25),
 					[]ast.Expression{ast.NewIdentifier(p(1, 8, 7, 7), "i")},
 					ast.AssignmentDeclaration, []ast.Expression{ast.NewIdentifier(p(1, 19, 18, 25), "articles")}),
-				nil),
+				nil, nil),
 		}, ast.FormatHTML)},
 	{"{% for i, article := range articles %}{% end %}",
 		ast.NewTree("", []ast.Node{
@@ -832,7 +825,7 @@ var treeTests = []struct {
 					ast.NewIdentifier(p(1, 8, 7, 7), "i"),
 					ast.NewIdentifier(p(1, 11, 10, 16), "article")},
 					ast.AssignmentDeclaration, []ast.Expression{ast.NewIdentifier(p(1, 28, 27, 34), "articles")}),
-				nil),
+				nil, nil),
 		}, ast.FormatHTML)},
 	{"{% for article in articles %}\n<div>{{ article.title }}</div>\n{% end %}",
 		ast.NewTree("articles.txt", []ast.Node{
@@ -853,8 +846,7 @@ var treeTests = []struct {
 								"title")},
 						ast.ContextHTML),
 					ast.NewText(p(2, 25, 54, 60), []byte("</div>\n"), ast.Cut{}),
-				},
-			),
+				}, nil),
 		}, ast.FormatHTML)},
 	{"{% for _, i := range []int{1,2,3} %}{% end %}",
 		ast.NewTree("", []ast.Node{
@@ -875,7 +867,16 @@ var treeTests = []struct {
 								{nil, ast.NewBasicLiteral(p(1, 28, 27, 27), ast.IntLiteral, "1")},
 								{nil, ast.NewBasicLiteral(p(1, 30, 29, 29), ast.IntLiteral, "2")},
 								{nil, ast.NewBasicLiteral(p(1, 32, 31, 31), ast.IntLiteral, "3")},
-							})}), nil)}, ast.FormatHTML)},
+							})}), nil, nil)}, ast.FormatHTML)},
+	{"{% for article in articles %}{% else %}{% end %}",
+		ast.NewTree("", []ast.Node{
+			ast.NewForIn(
+				p(1, 4, 3, 44),
+				ast.NewIdentifier(p(1, 8, 7, 13), "article"),
+				ast.NewIdentifier(p(1, 19, 18, 25), "articles"),
+				nil,
+				ast.NewBlock(nil, nil)),
+		}, ast.FormatHTML)},
 	{"{% switch x %}{% case 1 %}{% end %}",
 		ast.NewTree("", []ast.Node{
 			ast.NewSwitch(
@@ -1199,17 +1200,17 @@ var treeTests = []struct {
 		ast.NewForIn(p(1, 4, 3, 26),
 			ast.NewIdentifier(p(1, 8, 7, 7), "v"),
 			ast.NewIdentifier(p(1, 13, 12, 12), "e"),
-			[]ast.Node{ast.NewText(p(1, 17, 16, 16), []byte("b"), ast.Cut{})})}, ast.FormatHTML)},
+			[]ast.Node{ast.NewText(p(1, 17, 16, 16), []byte("b"), ast.Cut{})}, nil)}, ast.FormatHTML)},
 	{"{% for v in e %}{% break %}{% end %}", ast.NewTree("", []ast.Node{
 		ast.NewForIn(p(1, 4, 3, 32),
 			ast.NewIdentifier(p(1, 8, 7, 7), "v"),
 			ast.NewIdentifier(p(1, 13, 12, 12), "e"),
-			[]ast.Node{ast.NewBreak(p(1, 20, 19, 23), nil)})}, ast.FormatHTML)},
+			[]ast.Node{ast.NewBreak(p(1, 20, 19, 23), nil)}, nil)}, ast.FormatHTML)},
 	{"{% for v in e %}{% continue %}{% end %}", ast.NewTree("", []ast.Node{
 		ast.NewForIn(p(1, 4, 3, 35),
 			ast.NewIdentifier(p(1, 8, 7, 7), "v"),
 			ast.NewIdentifier(p(1, 13, 12, 12), "e"),
-			[]ast.Node{ast.NewContinue(p(1, 20, 19, 26), nil)})}, ast.FormatHTML)},
+			[]ast.Node{ast.NewContinue(p(1, 20, 19, 26), nil)}, nil)}, ast.FormatHTML)},
 	{"{% if a %}b{% end if %}", ast.NewTree("", []ast.Node{
 		ast.NewIf(p(1, 4, 3, 19), nil, ast.NewIdentifier(p(1, 7, 6, 6), "a"), ast.NewBlock(nil, []ast.Node{ast.NewText(p(1, 11, 10, 10), []byte("b"), ast.Cut{})}), nil)}, ast.FormatHTML)},
 	{"{% if a %}b{% else %}c{% end %}", ast.NewTree("", []ast.Node{
@@ -1461,19 +1462,24 @@ func TestGoContextTrees(t *testing.T) {
 }
 
 var shebangTests = []struct {
-	src    string
-	script bool
-	err    string
+	src      string
+	template bool
+	err      string
 }{
-	{"#! /usr/bin/scriggo", true, ""},
-	{"#! /usr/bin/scriggo\n=", true, ":2:1: syntax error: unexpected =, expected statement"},
-	{"a = 5\n#! /usr/bin/scriggo\n", true, ":2:1: syntax error: invalid character U+0023 '#'"},
 	{"#! /usr/bin/scriggo", false, ":1:1: syntax error: invalid character U+0023 '#'"},
+	{"#! /usr/bin/scriggo", true, ""},
+	{"#! /usr/bin/scriggo\n{% a }}", true, ":2:6: syntax error: unexpected }, expecting %}"},
+	{"{% extends \"layout.html\" %}\n#! /usr/bin/scriggo\n", true, ":2:1: syntax error: unexpected text in file with extends"},
 }
 
 func TestShebang(t *testing.T) {
 	for _, test := range shebangTests {
-		_, err := parseSource([]byte(test.src), test.script)
+		var err error
+		if test.template {
+			_, _, err = ParseTemplateSource([]byte(test.src), ast.FormatText, false, false)
+		} else {
+			_, err = parseSource([]byte(test.src), false)
+		}
 		if err == nil {
 			if test.err != "" {
 				t.Errorf("source: %q, expected error %q, got nothing\n", test.src, test.err)
@@ -1489,7 +1495,7 @@ func TestShebang(t *testing.T) {
 
 func TestTrees(t *testing.T) {
 	for _, tree := range treeTests {
-		node, _, err := ParseTemplateSource([]byte(tree.src), ast.FormatHTML, false, false, true)
+		node, _, err := ParseTemplateSource([]byte(tree.src), ast.FormatHTML, false, false)
 		if err != nil {
 			t.Errorf("source: %q, %s\n", tree.src, err)
 			continue
@@ -1725,16 +1731,6 @@ func equals(n1, n2 ast.Node, p int) error {
 		}
 		if nn1.Name != nn2.Name {
 			return fmt.Errorf("unexpected %q, expecting %q", nn1.Name, nn2.Name)
-		}
-
-	case *ast.DollarIdentifier:
-		nn2, ok := n2.(*ast.DollarIdentifier)
-		if !ok {
-			return fmt.Errorf("unexpected %#v, expecting %#v", n1, n2)
-		}
-		err := equals(nn1.Ident, nn2.Ident, p)
-		if err != nil {
-			return err
 		}
 
 	case *ast.BasicLiteral:
@@ -2128,6 +2124,10 @@ func equals(n1, n2 ast.Node, p int) error {
 			if err != nil {
 				return err
 			}
+		}
+		err = equals(nn1.Else, nn2.Else, p)
+		if err != nil {
+			return err
 		}
 
 	case *ast.ForRange:
@@ -2633,7 +2633,7 @@ func TestRooted(t *testing.T) {
 		{"a/b/c", "../d/e", "a/d/e", nil},
 		{"a/b/c", "../../d/e", "d/e", nil},
 		{"a/b", "../c/d", "c/d", nil},
-		{"a/b", "../../c/d", "", os.ErrInvalid},
+		{"a/b", "../../c/d", "", os.ErrNotExist},
 	}
 	for _, test := range tests {
 		root, err := rooted(test.parent, test.name)

@@ -1,3 +1,5 @@
+//go:build go1.19
+
 package main
 
 import (
@@ -38,7 +40,10 @@ func Test_renderPackages(t *testing.T) {
 				packages = make(native.Packages, 1)
 				var decs native.Declarations
 				// "custom/fmt/path"
-				decs = make(native.Declarations, 25)
+				decs = make(native.Declarations, 28)
+				decs["Append"] = fmt.Append
+				decs["Appendf"] = fmt.Appendf
+				decs["Appendln"] = fmt.Appendln
 				decs["Errorf"] = fmt.Errorf
 				decs["Formatter"] = reflect.TypeOf((*fmt.Formatter)(nil)).Elem()
 				decs["Fprint"] = fmt.Fprint
@@ -144,7 +149,10 @@ func Test_renderPackages(t *testing.T) {
 				packages = make(native.Packages, 1)
 				var decs native.Declarations
 				// "fmt"
-				decs = make(native.Declarations, 25)
+				decs = make(native.Declarations, 28)
+				decs["Append"] = fmt.Append
+				decs["Appendf"] = fmt.Appendf
+				decs["Appendln"] = fmt.Appendln
 				decs["Errorf"] = fmt.Errorf
 				decs["Formatter"] = reflect.TypeOf((*fmt.Formatter)(nil)).Elem()
 				decs["Fprint"] = fmt.Fprint
@@ -219,7 +227,7 @@ func Test_renderPackages(t *testing.T) {
 			b := bytes.Buffer{}
 			err := renderPackages(&b, "", c.sf, c.goos, buildFlags{})
 			if err != nil {
-				t.Fatal(err)
+				t.Fatal(err, c.sf)
 			}
 			got := _cleanOutput(b.String())
 			c.expected = _cleanOutput(c.expected)
@@ -255,6 +263,9 @@ func Test_parseGoPackage(t *testing.T) {
 		"fmt": {
 			name: "fmt",
 			decls: map[string]string{
+				"Append":     "fmt.Append",
+				"Appendf":    "fmt.Appendf",
+				"Appendln":   "fmt.Appendln",
 				"Errorf":     "fmt.Errorf",
 				"Formatter":  "reflect.TypeOf((*fmt.Formatter)(nil)).Elem()",
 				"Fprint":     "fmt.Fprint",
@@ -320,7 +331,7 @@ func Test_parseGoPackage(t *testing.T) {
 	goos := "linux" // paths in this test should be OS-independent.
 	for path, expected := range cases {
 		t.Run(path, func(t *testing.T) {
-			gotName, gotDecls, _, _, err := loadGoPackage(path, "", goos, buildFlags{}, nil, nil)
+			gotName, gotDecls, _, _, err := loadGoPackage(path, "", goos, buildFlags{}, nil, nil, newPackageNameCache())
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -47,10 +47,9 @@ func getOutputFlag(output string) (io.WriteCloser, error) {
 
 // uncapitalize "uncapitalizes" n.
 //
-// 	Name        ->  name
+//	Name        ->  name
 //	DoubleWord  ->  doubleWord
-//  AbC         ->  abC
-//
+//	AbC         ->  abC
 func uncapitalize(n string) string {
 	isUp := unicode.IsUpper
 	toLow := unicode.ToLower
@@ -110,8 +109,6 @@ func txtToHelp(s string) {
 	stderr(strings.Split(s, "\n")...)
 }
 
-var uniquePackageNameCache = map[string]string{}
-
 var goKeywords = []string{
 	"break", "case", "chan", "const", "continue", "default", "defer", "else",
 	"fallthrough", "for", "func", "go", "goto", "if", "import", "interface", "map",
@@ -128,31 +125,55 @@ func isGoKeyword(s string) bool {
 	return false
 }
 
-// uniquePackageName generates an unique package name for every package path.
-func uniquePackageName(pkgPath string) string {
+type packageNameCache struct {
+	cache map[string]string
+}
 
-	pkgName := filepath.Base(pkgPath)
-	done := false
-	for !done {
-		done = true
-		cachePath, ok := uniquePackageNameCache[pkgName]
-		if ok && cachePath != pkgPath {
-			done = false
-			pkgName += "_"
+func newPackageNameCache() packageNameCache {
+	return packageNameCache{
+		cache: map[string]string{},
+	}
+}
+
+// packageNameUsed is a simple wrapper that determines if a package name is already in use.
+func (u packageNameCache) packageNameUsed(pkgName string) bool {
+	for _, v := range u.cache {
+		if v == pkgName {
+			return true
 		}
 	}
-	if isGoKeyword(pkgName) {
-		pkgName = "_" + pkgName + "_"
-	}
-	uniquePackageNameCache[pkgName] = pkgPath
+	return false
+}
 
+// uniquePackageName generates an unique package name for every package path,
+// this will ensure that even if package names collide we return a valid unique package name.
+func (u packageNameCache) uniquePackageName(pkgPath, pkgName string) string {
+
+	//check if the package path has already been resolved
+	if cachePath, ok := u.cache[pkgPath]; ok {
+		return cachePath //package path to name has already been set
+	}
+
+	//check if the package name is available
+	if u.packageNameUsed(pkgName) {
+		//iterate on the package name until we get a free package name
+		i := 2
+		for {
+			pkgNameTemp := fmt.Sprintf("%s_%d", pkgName, i)
+			if !u.packageNameUsed(pkgNameTemp) {
+				pkgName = pkgNameTemp
+				break
+			}
+			i++
+		}
+	}
+	u.cache[pkgPath] = pkgName
 	return pkgName
 }
 
 // goBaseVersion returns the go base version for v.
 //
-//		1.15.5 -> 1.15
-//
+//	1.15.5 -> 1.15
 func goBaseVersion(v string) string {
 	// When updating, also update test/compare/run.go.
 	if strings.HasPrefix(v, "devel ") {
@@ -200,8 +221,7 @@ func hasStdlibPrefix(path string) bool {
 
 // nextGoVersion returns the successive go version of v.
 //
-//		1.15.5 -> 1.16
-//
+//	1.15.5 -> 1.16
 func nextGoVersion(v string) string {
 	v = goBaseVersion(v)[4:]
 	f, err := strconv.ParseFloat(v, 32)

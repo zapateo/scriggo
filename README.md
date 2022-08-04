@@ -1,4 +1,5 @@
 <img src="https://scriggo-site.pages.dev/images/scriggo-padded.svg" alt="Scriggo" title="Scriggo" width="535px" style="max-width: 100%">
+![Coverage](https://img.shields.io/badge/Coverage-52.3%25-yellow)
 
 
 The world’s most powerful template engine and [Go](https://go.dev/) embeddable interpreter.

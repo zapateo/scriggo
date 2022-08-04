@@ -1,11 +1,13 @@
 <img src="https://scriggo-site.pages.dev/images/scriggo-padded.svg" alt="Scriggo" title="Scriggo" width="535px" style="max-width: 100%">
-![Coverage](https://img.shields.io/badge/Coverage-52.3%25-yellow)
+
+
 
 
 The world’s most powerful template engine and [Go](https://go.dev/) embeddable interpreter.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/open2b/scriggo/.svg)](https://pkg.go.dev/github.com/open2b/scriggo/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/open2b/scriggo)](https://goreportcard.com/report/github.com/open2b/scriggo)
+![Coverage](https://img.shields.io/badge/Coverage-52.3%25-yellow)
 
 [Website](https://scriggo.com/) | [Get Started](https://scriggo.com/get-started) | [Documentation](https://scriggo.com/what-is-scriggo) | [Community](https://github.com/open2b/scriggo/discussions) | [Contributing](https://github.com/open2b/scriggo/blob/main/CONTRIBUTING.md)
 
